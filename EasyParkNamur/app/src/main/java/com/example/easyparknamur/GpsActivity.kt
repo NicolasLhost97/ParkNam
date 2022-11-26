@@ -16,6 +16,7 @@ import android.graphics.Color
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -33,6 +34,8 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.example.easyparknamur.databinding.ActivityGpsBinding
+import com.mapbox.android.core.permissions.PermissionsListener
+import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.api.directions.v5.models.Bearing
 import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.bindgen.Expected
@@ -105,12 +108,11 @@ import com.mapbox.navigation.ui.voice.model.SpeechValue
 import com.mapbox.navigation.ui.voice.model.SpeechVolume
 import org.json.JSONObject
 import java.util.*
-import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.minutes
 
 
-class GpsActivity : AppCompatActivity(), LocationListener{
-//    private var baseUrl = "http://192.168.0.8:8000/"
+class GpsActivity : AppCompatActivity(), LocationListener, PermissionsListener {
+    private val permissionsManager = PermissionsManager(this)
+    //    private var baseUrl = "http://192.168.0.8:8000/"
     private var baseUrl = "http://192.168.106.113/"
     private lateinit var mapView: MapView
     protected var locationManager: LocationManager? = null
@@ -492,6 +494,17 @@ class GpsActivity : AppCompatActivity(), LocationListener{
 
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
+        val permissionCheck = ContextCompat.checkSelfPermission(
+            this@GpsActivity,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            // ask permissions here using below code
+            ActivityCompat.requestPermissions(
+                this@GpsActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                1
+            )
+        }
         super.onCreate(savedInstanceState)
         binding = ActivityGpsBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -702,9 +715,9 @@ class GpsActivity : AppCompatActivity(), LocationListener{
                     bearing(0.0) // Rotate the camera
                     pitch(0.0) // Set the camera pitch
                 },
-            MapAnimationOptions.mapAnimationOptions {
-                duration(2500)
-            }
+                MapAnimationOptions.mapAnimationOptions {
+                    duration(2500)
+                }
             )
         }
         Handler().postDelayed({
@@ -991,16 +1004,16 @@ class GpsActivity : AppCompatActivity(), LocationListener{
         )
         isHeatmap = true;
 //        Handler().postDelayed({
-            //mapbox://styles/nicocopops/clapesx4w002b14ktq95094o7
-            binding.mapView.getMapboxMap().loadStyleUri("mapbox://styles/nicocopops/clar1uudt007h15p6ywwpatat") { style ->
-                addRuntimeLayers(style, dateFormat)
-                binding.mapView.gestures.addOnMapLongClickListener { point ->
-                    if(isHeatmap){
-                        addPoint(point)
-                    }
-                    true
+        //mapbox://styles/nicocopops/clapesx4w002b14ktq95094o7
+        binding.mapView.getMapboxMap().loadStyleUri("mapbox://styles/nicocopops/clar1uudt007h15p6ywwpatat") { style ->
+            addRuntimeLayers(style, dateFormat)
+            binding.mapView.gestures.addOnMapLongClickListener { point ->
+                if(isHeatmap){
+                    addPoint(point)
                 }
+                true
             }
+        }
 //        }, 1500)
 //        binding.mapView.getMapboxMap().apply {
 //            loadStyleUri("mapbox://styles/nicocopops/clar1uudt007h15p6ywwpatat") { style -> addRuntimeLayers(style) }
@@ -1231,5 +1244,58 @@ class GpsActivity : AppCompatActivity(), LocationListener{
                 }
             )
         }
+    }
+
+    override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
+        Toast.makeText(
+            this,
+            "This app needs location and storage permissions in order to show its functionality.",
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
+    override fun onPermissionResult(granted: Boolean) {
+        if (granted) {
+            requestOptionalPermissions()
+        } else {
+            Toast.makeText(
+                this,
+                "You didn't grant the permissions required to use the app",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun requestOptionalPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+        // starting from Android R leak canary writes to Download storage without the permission
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+        if (Build.VERSION.SDK_INT >= 33 &&
+            ContextCompat.checkSelfPermission(this, "android.permission.POST_NOTIFICATIONS") !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionsToRequest.add("android.permission.POST_NOTIFICATIONS")
+        }
+        if (permissionsToRequest.isNotEmpty()) {
+            ActivityCompat.requestPermissions(
+                this,
+                permissionsToRequest.toTypedArray(),
+                10
+            )
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 }
