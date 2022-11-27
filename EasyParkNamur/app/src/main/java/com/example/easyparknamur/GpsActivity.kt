@@ -1036,7 +1036,7 @@ class GpsActivity : AppCompatActivity(), LocationListener, PermissionsListener {
     private fun createHeatmapSource(date: String): GeoJsonSource {
         return geoJsonSource(FREE_PLACES_SOURCE_ID) {
 //            Log.e("geoJsonSource", url(FREE_PLACES_SOURCE_URL+date).sourceId)
-            url(FREE_PLACES_SOURCE_URL+date)
+            url(FREE_PLACES_SOURCE_URL+date+"/"+maxDuration)
         }
     }
 
@@ -1193,11 +1193,11 @@ class GpsActivity : AppCompatActivity(), LocationListener, PermissionsListener {
                     get { literal("mag") }
                     stop {
                         literal(0)
-                        literal(0)
+//                        literal(0)
                     }
                     stop {
-                        literal(6)
                         literal(1)
+//                        literal(1)
                     }
                 }
             )
@@ -1209,11 +1209,11 @@ class GpsActivity : AppCompatActivity(), LocationListener, PermissionsListener {
                     zoom()
                     stop {
                         literal(0)
-                        literal(1)
+//                        literal(1)
                     }
                     stop {
-                        literal(9)
-                        literal(3)
+                        literal(0.1)
+//                        literal(1)
                     }
                 }
             )
@@ -1227,7 +1227,7 @@ class GpsActivity : AppCompatActivity(), LocationListener, PermissionsListener {
                         literal(2)
                     }
                     stop {
-                        literal(9)
+                        literal(10)
                         literal(20)
                     }
                 }
