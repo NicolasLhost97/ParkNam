@@ -112,8 +112,7 @@ import java.util.*
 
 class GpsActivity : AppCompatActivity(), LocationListener, PermissionsListener {
     private val permissionsManager = PermissionsManager(this)
-    //    private var baseUrl = "http://192.168.0.8:8000/"
-    private var baseUrl = "http://192.168.106.113/"
+    private var baseUrl = "http://192.168.0.8:8000/"
     private lateinit var mapView: MapView
     protected var locationManager: LocationManager? = null
     protected var location: Location? = null
@@ -153,7 +152,6 @@ class GpsActivity : AppCompatActivity(), LocationListener, PermissionsListener {
     private companion object {
         private const val BUTTON_ANIMATION_DURATION = 1500L
         private const val FREE_PLACES_SOURCE_URL ="http://192.168.0.8:8000/place/predict/"
-        private const val EARTHQUAKE_SOURCE_URL = "https://www.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson"
         private const val FREE_PLACES_SOURCE_ID = "freePlaces"
         private const val HEATMAP_LAYER_ID = "freePlaces-heat"
         private const val HEATMAP_LAYER_SOURCE = "freePlaces"
@@ -743,7 +741,7 @@ class GpsActivity : AppCompatActivity(), LocationListener, PermissionsListener {
             NavigationOptions.Builder(this)
                 .accessToken(getString(R.string.mapbox_access_token))
                 // comment out the location engine setting block to disable simulation
-//                .locationEngine(replayLocationEngine)
+                .locationEngine(replayLocationEngine)
                 .build()
         )
 
@@ -768,12 +766,12 @@ class GpsActivity : AppCompatActivity(), LocationListener, PermissionsListener {
                 ReplayRouteMapper.mapToUpdateLocation(
                     Date().time.toDouble(),
 //                    Point.fromLngLat(location!!.longitude, location!!.latitude)
-                    point = Point.fromLngLat(4.86746, 50.4669)
+                    point = Point.fromLngLat(4.856188, 50.464871)
                 )
             )
         )
         mapboxReplayer.playFirstLocation()
-        mapboxReplayer.playbackSpeed(3.0)
+        mapboxReplayer.playbackSpeed(0.0)
     }
 
     private fun findRoute(destination: Point) {
@@ -1092,8 +1090,8 @@ class GpsActivity : AppCompatActivity(), LocationListener, PermissionsListener {
     }
 
     private fun sendPosition(){
-        var url = baseUrl+"place/park?x="+location?.latitude.toString()+"&y="+location?.longitude.toString()+"&stay="+maxDuration
-//        var url = baseUrl+"place/park?x=50.46593932751004&y=4.875642089405123&stay=30min"
+//        var url = baseUrl+"place/park?x="+location?.latitude.toString()+"&y="+location?.longitude.toString()+"&stay="+maxDuration
+        var url = baseUrl+"place/park?x=50.464871&y=4.856188&stay=30min"
         var requestQueue: RequestQueue = Volley.newRequestQueue(this@GpsActivity)
         var objectRequest: StringRequest = object : StringRequest(
             Request.Method.POST,
